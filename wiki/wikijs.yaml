@@ -4,6 +4,11 @@
   hosts: wikijs
   become: true
   tasks:
+    - name: Create project directory
+      file:
+        path: /opt
+        state: directory
+
     - name: Update and upgrade apt packages
       apt:
         upgrade: yes
@@ -53,48 +58,11 @@
         cmd: "openssl rand -base64 32 > /etc/wiki/.db-secret"
       when: db_secret.stat.exists == False
 
-    - name: Create a Docker network
-      docker_network:
-        name: wikinet
+    - name: Copy configs to host
+      copy:
+        src: configs
+        dest: /opt
 
-    - name: Create a volume
-      docker_volume:
-        name: pgdata
-
-    - name: Create and start PostgreSQL container
-      docker_container:
-        name: db
-        hostname: db
-        networks: 
-          - name: wikinet
-        image: postgres:11
-        restart_policy: unless-stopped
-        env:
-          POSTGRES_DB=wiki
-          POSTGRES_USER=wiki
-          POSTGRES_PASSWORD_FILE=/etc/wiki/.db-secret
-        volumes:
-          - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
-          - pgdata:/var/lib/postgresql/data
-
-    - name: Create and start Wiki container
-      docker_container:
-        name: wiki
-        hostname: wiki
-        networks:
-          - name: wikinet
-        image: ghcr.io/requarks/wiki:2
-        restart_policy: unless-stopped
-        env:
-          DB_TYPE=postgres
-          DB_HOST=db
-          DB_PORT=5432
-          DB_PASS_FILE=/etc/wiki/.db-secret
-          DB_USER=wiki
-          DB_NAME=wiki
-        volumes:
-          - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
-        exposed_ports:
-          - 3000
-        ports:
-          - "3000:3000"
+    - name: Start wiki via Docker-Compose
+      docker_compose:
+        project_src: /opt/configs
