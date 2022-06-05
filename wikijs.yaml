@@ -1,0 +1,100 @@
+#!/usr/bin/env ansible-playbook
+
+- name: Wikijs
+  hosts: wikijs
+  become: true
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes
+
+    - name: Preinstallation process
+      package:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - openssl
+          - docker-compose
+        state: latest
+
+    - name: Add Docker GPG-key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    # TODO: change ubuntu to crossplatform ($lsb-release)
+    - name: Add Docker Repo
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: Update apt and install docker
+      package:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+
+    - name: Create Wiki directory
+      file:
+        path: /etc/wiki
+        state: directory
+
+    - name: Check if DB secret already exists
+      stat:
+        path: /etc/wiki/.db-secret
+      register: db_secret
+
+    - name: Create DB secret
+      shell:
+        cmd: "openssl rand -base64 32 > /etc/wiki/.db-secret"
+      when: db_secret.stat.exists == False
+
+    - name: Create a Docker network
+      docker_network:
+        name: wikinet
+
+    - name: Create a volume
+      docker_volume:
+        name: pgdata
+
+    - name: Create and start PostgreSQL container
+      docker_container:
+        name: db
+        hostname: db
+        networks: 
+          - name: wikinet
+        image: postgres:11
+        restart_policy: unless-stopped
+        env:
+          POSTGRES_DB=wiki
+          POSTGRES_USER=wiki
+          POSTGRES_PASSWORD_FILE=/etc/wiki/.db-secret
+        volumes:
+          - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+          - pgdata:/var/lib/postgresql/data
+
+    - name: Create and start Wiki container
+      docker_container:
+        name: wiki
+        hostname: wiki
+        networks:
+          - name: wikinet
+        image: ghcr.io/requarks/wiki:2
+        restart_policy: unless-stopped
+        env:
+          DB_TYPE=postgres
+          DB_HOST=db
+          DB_PORT=5432
+          DB_PASS_FILE=/etc/wiki/.db-secret
+          DB_USER=wiki
+          DB_NAME=wiki
+        volumes:
+          - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+        exposed_ports:
+          - 3000
+        ports:
+          - "3000:3000"

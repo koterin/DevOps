@@ -1,0 +1,43 @@
+version: "3.5"
+
+networks:
+  wikinet:
+    name: wikinet
+
+volumes:
+  pgdata:
+    name: pgdata
+
+services:
+  db:
+    container_name: db
+    image: "postgres:11"
+    networks:
+      - wikinet
+    hostname: db
+    restart: "unless-stopped"
+    environment:
+      - POSTGRES_DB=wiki
+      - POSTGRES_USER=wiki
+      - POSTGRES_PASSWORD_FILE=/etc/wiki/.db-secret
+    volumes:
+      - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+      - pgdata:/var/lib/postgresql/data
+  wiki:
+    container_name: wiki
+    image: ghcr.io/requarks/wiki:2
+    networks:
+      - wikinet
+    hostname: wiki
+    restart: "unless-stopped"
+    environment:
+      - DB_TYPE=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_PASS_FILE=/etc/wiki/.db-secret
+      - DB_USER=wiki
+      - DB_NAME=wiki
+    volumes:
+      - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
+    ports:
+      - "3000:3000"
