@@ -22,14 +22,13 @@
           - lsb-release
           - openssl
           - docker-compose
-        state: latest
+
 
     - name: Add Docker GPG-key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    # TODO: change ubuntu to crossplatform ($lsb-release)
     - name: Add Docker Repo
       apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu bionic stable
@@ -63,6 +62,18 @@
         src: configs
         dest: /opt
 
+    - name: Set logrotate for /var/log directory
+      copy:
+        src: /opt/configs/wiki_rotate.conf
+        dest: /etc/logrotate.d
+        remote_src: true
+
+    - name: Set logrotate for Docker
+      copy:
+        src: /opt/configs/daemon.json
+        dest: /etc/docker
+        remote_src: true
+
     - name: Download node_exporter
       get_url:
         url: https://github.com/prometheus/node_exporter/releases/download/v1.1.0/node_exporter-1.1.0.linux-amd64.tar.gz
@@ -72,7 +83,7 @@
       unarchive:
         src: /opt/node_exporter-1.1.0.linux-amd64.tar.gz
         dest: /opt
-        remote_src: yes
+        remote_src: true
 
     - name: Setting node_exporter-service config
       copy:

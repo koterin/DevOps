@@ -48,8 +48,10 @@ services:
     hostname: nginx
     restart: "unless-stopped"
     volumes:
-      - ./nginx/wiki.berizaryad.ru.conf:/etc/nginx/conf.d/wiki.berizaryad.ru.conf:ro
+      - ./nginx/wikijs.berizaryad.ru.conf:/etc/nginx/conf.d/wikijs.berizaryad.ru.conf:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/berizaryad.ru.crt:/etc/ssl/certs/berizaryad.ru.crt:ro
+      - ./nginx/berizaryad.ru.key:/opt/nginx/berizaryad.ru.key:ro
     ports:
       - "80:80"
       - "443:443"

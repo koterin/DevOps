@@ -1,2 +1,6 @@
 # Ignore vim swap files
 *.swp
+
+# Don't push certificates and keys
+*.crt
+*.key
