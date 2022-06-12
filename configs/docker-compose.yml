@@ -39,19 +39,5 @@ services:
       - DB_NAME=wiki
     volumes:
       - /etc/wiki/.db-secret:/etc/wiki/.db-secret:ro
-
-  nginx:
-    container_name: nginx
-    image: nginx:latest
-    networks:
-      - wikinet
-    hostname: nginx
-    restart: "unless-stopped"
-    volumes:
-      - ./nginx/wikijs.berizaryad.ru.conf:/etc/nginx/conf.d/wikijs.berizaryad.ru.conf:ro
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/berizaryad.ru.crt:/etc/ssl/certs/berizaryad.ru.crt:ro
-      - ./nginx/berizaryad.ru.key:/opt/nginx/berizaryad.ru.key:ro
     ports:
-      - "80:80"
-      - "443:443"
+      - "3000:3000"

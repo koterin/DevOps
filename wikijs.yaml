@@ -21,6 +21,7 @@
           - gnupg
           - lsb-release
           - openssl
+          - nginx
           - docker-compose
 
 
@@ -62,6 +63,18 @@
         src: configs
         dest: /opt
 
+    - name: Copy nginx configs Pt.1
+      copy:
+        src: /opt/configs/nginx/wikijs.berizaryad.ru.conf
+        dest: /etc/nginx/conf.d
+        remote_src: true
+
+    - name: Copy nginx configs Pt.2
+      copy:
+        src: /opt/configs/nginx/default.conf
+        dest: /etc/nginx/conf.d
+        remote_src: true
+
     - name: Set logrotate for /var/log directory
       copy:
         src: /opt/configs/wiki_rotate.conf
@@ -101,3 +114,10 @@
     - name: Start wiki via Docker-Compose
       docker_compose:
         project_src: /opt/configs
+
+    - name: Start NGINX
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
+        daemon_reload: yes
