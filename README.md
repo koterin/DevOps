@@ -12,9 +12,9 @@
  2. Устанавливается Docker
  3. Создается пароль для базы данных Wiki
  4. Копируются все конфиги с машины-хоста (лежат в текущем репозитории)
- 5. Ротируются все логи из папки `/var/log` с помощью `logrotate` по конфигу [wiki_rotate.conf](https://gitlab.com/berizaryad_project/devops/wiki.js/-/blob/master/configs/wiki_rotate.conf); логи контейнеров докера - с помощью [daemon.json](https://gitlab.com/berizaryad_project/devops/wiki.js/-/blob/master/configs/daemon.json)
- 6. Загружается node-exporter для Prometheus; запускается как сервис-демон с помощью `systemd` по [node_exporter.service](https://gitlab.com/berizaryad_project/devops/wiki.js/-/blob/master/configs/node_exporter.service)
- 7. Запускается разворачивание контейнеров с помощью [docker-compose](https://gitlab.com/berizaryad_project/devops/wiki.js/-/blob/master/configs/docker-compose.yml)
+ 5. Ротируются все логи из папки `/var/log` с помощью `logrotate` по конфигу [wiki_rotate.conf](https://github.com/koterin/DevOps/blob/master/configs/wiki_rotate.conf); логи контейнеров докера - с помощью [daemon.json](https://github.com/koterin/DevOps/blob/master/configs/daemon.json)
+ 6. Загружается node-exporter для Prometheus; запускается как сервис-демон с помощью `systemd` по [node_exporter.service](https://github.com/koterin/DevOps/blob/master/configs/node_exporter.service)
+ 7. Запускается разворачивание контейнеров с помощью [docker-compose](https://github.com/koterin/DevOps/blob/master/configs/docker-compose.yml)
 
 ## Docker-compose
 
@@ -27,6 +27,6 @@
 
 ## NGINX
 
-1. Все попытки соединения не по `hostname=wikijs.berizaryad.ru` выдают `444` ([конфиги](https://gitlab.com/berizaryad_project/devops/wiki.js/-/tree/master/configs/nginx))
+1. Все попытки соединения не по `hostname={hostname}` выдают `444`
 2. HTTP-трафик автоматически перенаправляется на HTTPS
 3. NGINX слушает wiki на `3000` порту
